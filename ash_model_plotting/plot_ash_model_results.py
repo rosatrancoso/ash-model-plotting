@@ -41,7 +41,7 @@ def main():
     if args.verbose:
         log_level = logging.DEBUG
     else:
-        log_level = logging.INFO
+        log_level = logging.DEBUG
     logging.getLogger().setLevel(log_level)
 
     plot_results(args.results, args.model_type, args.limits,

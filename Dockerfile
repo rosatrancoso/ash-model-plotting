@@ -1,29 +1,28 @@
 # Let's build a Dockerfile to run our tests for ash model plotting
-# We use miniconda because the Iris package and its dependencies are 
-# easiest to install from the conda-forge repository. 
+# We use miniconda because the Iris package and its dependencies are
+# easiest to install from the conda-forge repository.
 FROM continuumio/miniconda3
 
-# Install package dependencies
-RUN apt-get update -y && \
-    apt-get install -y \
-     build-essential \
-     curl \
-     git 
+COPY conda_environment.yml /tmp/conda_environment.yml
+RUN conda env create -f /tmp/conda_environment.yml
 
-# Install requirements
-RUN conda install -y -c conda-forge iris \
-    iris-sample-data flake8 pytest
-
-# Install Python modules
 ENV APP=/app
 ENV PYTHONPATH=$APP
 WORKDIR $APP
-RUN mkdir ash-model-plotting
+# RUN mkdir ash-model-plotting
 
 # Copy app files to container
+RUN echo ""
 COPY setup.py README.md .flake8 $APP/
 COPY ash_model_plotting/ $APP/ash_model_plotting
 COPY test/ $APP/test
+RUN pip install -e .
 
 # Clear old caches, if present
 RUN find . -regextype posix-egrep -regex '.*/__pycache__.*' -delete
+
+# docker run -ti --rm \
+# -v ./ash_model_plotting:/app/ash_model_plotting \
+# -v ./test:/app/test \
+# -v ./tmp:/tmp \
+# ash:latest /bin/bash

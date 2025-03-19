@@ -1,0 +1,9 @@
+PackagesNotFoundError: The following packages are not available from current channels:
+
+  - proj4==5.2.0=h470a237_1
+  - owslib==0.17.0=py_0
+  - libuuid==2.32.1=h470a237_2
+  - libtiff==4.0.10=he6b73bb_1
+  - jpeg==9c=h470a237_1
+  - hdf5==1.10.4=nompi_h5598ddc_1003
+  - geos==3.6.2=hfc679d8_4

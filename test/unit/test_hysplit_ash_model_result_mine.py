@@ -15,7 +15,7 @@ from ash_model_plotting.ash_model_results import (
 
 
 def test_hysplit_ash_model_result_init_happy_path_netcdf(data_dir):
-    source_file = data_dir / 'hysplit_operational.nc'
+    source_file = data_dir / 'cdump_sum_Ruapehu_QVA_high.nc'
     result = HysplitAshModelResult(source_file)
 
     assert result.source_data == source_file
@@ -28,7 +28,7 @@ def test_hysplit_ash_model_result_init_not_a_file():
 
 
 def test_hysplit_ash_model_air_concentration(data_dir):
-    source_file = data_dir / 'hysplit_operational.nc'
+    source_file = data_dir / 'cdump_sum_Ruapehu_QVA_high.nc'
     result = HysplitAshModelResult(source_file)
     assert isinstance(result.air_concentration, iris.cube.Cube)
     assert (result.air_concentration.name() ==
@@ -37,7 +37,7 @@ def test_hysplit_ash_model_air_concentration(data_dir):
 
 
 def test_hysplit_ash_model_total_deposition(data_dir):
-    source_file = data_dir / 'hysplit_operational.nc'
+    source_file = data_dir / 'cdump_sum_Ruapehu_QVA_high.nc'
     result = HysplitAshModelResult(source_file)
 
     assert isinstance(result.total_deposition, iris.cube.Cube)
@@ -47,7 +47,7 @@ def test_hysplit_ash_model_total_deposition(data_dir):
 
 
 def test_hysplit_ash_model_total_column(data_dir):
-    source_file = data_dir / 'hysplit_operational.nc'
+    source_file = data_dir / 'cdump_sum_Ruapehu_QVA_high.nc'
     result = HysplitAshModelResult(source_file)
 
     assert isinstance(result.total_column, iris.cube.Cube)
@@ -73,10 +73,10 @@ def test_hysplit_ash_model_total_column(data_dir):
       'Total_Deposition_00000_20200331060000.png',
       'Total_Deposition_summary.html'])
     ])
-def test_plot_functions(hysplit_model_result, tmpdir, plot_func, expected,
+def test_plot_functions(hysplit_model_result_mine, tmpdir, plot_func, expected,
                         scantree):
     # Call the plot function - we expect html to be generated here, too
-    getattr(hysplit_model_result, plot_func)(tmpdir)
+    getattr(hysplit_model_result_mine, plot_func)(tmpdir)
 
     plot_files = [Path(entry).relative_to(tmpdir).as_posix()
                   for entry in scantree(tmpdir) if entry.is_file()]
@@ -89,16 +89,16 @@ def test_plot_functions(hysplit_model_result, tmpdir, plot_func, expected,
     'plot_total_column',
     'plot_total_deposition'
     ])
-def test_plot_functions_no_data(hysplit_model_result, tmpdir, plot_func):
+def test_plot_functions_no_data(hysplit_model_result_mine, tmpdir, plot_func):
     # Remove cubes from data so that none are found
-    hysplit_model_result.cubes = iris.cube.CubeList()
+    hysplit_model_result_mine.cubes = iris.cube.CubeList()
     with pytest.raises(AshModelResultError):
-        getattr(hysplit_model_result, plot_func)(tmpdir)
+        getattr(hysplit_model_result_mine, plot_func)(tmpdir)
 
 
-def test_calculate_total_column(hysplit_model_result):
+def test_calculate_total_column(hysplit_model_result_mine):
     # Arrange
-    air_concentration = hysplit_model_result.air_concentration
+    air_concentration = hysplit_model_result_mine.air_concentration
     air_concentration.data = np.ones(air_concentration.data.shape)
     # Collapse two layers 1000 m thick to get time, lat, lon
     expected = np.ones(air_concentration.data.shape)[:, 0, :, :] * 2 * 1000

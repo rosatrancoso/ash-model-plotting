@@ -9,6 +9,7 @@ import warnings
 from itertools import repeat
 from multiprocessing import Manager, get_context
 
+
 # Import matplotlib before Iris to allow backend setting
 import matplotlib
 matplotlib.use('agg')
@@ -24,7 +25,7 @@ import numpy as np
 import cf_units
 
 logger = logging.getLogger(__name__)
-POOL_LOGGER_LEVEL = logging.INFO
+POOL_LOGGER_LEVEL = logging.DEBUG
 
 
 def plot_4d_cube(cube, output_dir, file_ext='png', **kwargs):
@@ -65,13 +66,13 @@ def plot_4d_cube(cube, output_dir, file_ext='png', **kwargs):
         #  Plot slices in parallel
         processes = len(os.sched_getaffinity(0))
         logger.debug('plot_4d for %s with %s processes', zlevel_str, processes)
-        with get_context('spawn').Pool(
+        with get_context('spawn').Pool(1,
                 initializer=setup_pool_logger, initargs=(POOL_LOGGER_LEVEL,)
                 ) as pool:
             # 'spawn' is required to ensure each task gets fresh interpreter and
             # avoid issues with hanging caused by items shared across threads
             # starmap takes an iterable of iterables with the arguments
-            pool.starmap(_save_yx_slice_figure, args)
+            pool.starmap_async(_save_yx_slice_figure, args)
 
         # Update metadata
         fig_paths = {key: fig_paths[key] for key in sorted(fig_paths.keys())}
@@ -124,7 +125,7 @@ def plot_3d_cube(cube, output_dir, file_ext='png', **kwargs):
         # 'spawn' is required to ensure each task gets fresh interpreter and
         # avoid issues with hanging caused by items shared across threads
         # starmap takes an iterable of iterables with the arguments
-        pool.starmap(_save_yx_slice_figure, args)
+        pool.starmap_async(_save_yx_slice_figure, args)
 
     # Create metadata, including sorted list of fig_paths
     fig_paths = {key: fig_paths[key] for key in sorted(fig_paths.keys())}
@@ -168,7 +169,7 @@ def _save_yx_slice_figure(yx_slice, fig_paths, output_dir, file_ext, limits,
 
 
 def plot_2d_cube(cube, vmin=None, vmax=None, mask_less=1e-8,
-                 vaac_colours=False, limits=None):
+                 vaac_colours=False, limits=None, clon=180):
     """
     Draw a map of a two dimensional cube.  Cube should have two spatial
     dimensions (e.g. latitude, longitude).  All other dimensions (time,
@@ -210,6 +211,8 @@ def plot_2d_cube(cube, vmin=None, vmax=None, mask_less=1e-8,
 
     # Plot data
     fig = plt.figure()
+    print("ROSA - Plotting cube %s", cube.name())
+    ax = plt.axes(projection=ccrs.PlateCarree(clon))
     mesh_plot = iplt.pcolormesh(cube, vmin=vmin, vmax=vmax,
                                 cmap=cmap, norm=norm)
     ax = plt.gca()
@@ -225,7 +228,9 @@ def plot_2d_cube(cube, vmin=None, vmax=None, mask_less=1e-8,
         ax.set_ylim(ymin, ymax)
 
     # Add tick marks
-    ax.set_xticks(ax.get_xticks(), crs=ccrs.PlateCarree())
+    xlocs = ax.get_xticks()+clon
+    print(xlocs)
+    ax.set_xticks(xlocs, crs=ccrs.PlateCarree())
     ax.set_yticks(ax.get_yticks(), crs=ccrs.PlateCarree())
     lon_formatter = LongitudeFormatter(zero_direction_label=True)
     lat_formatter = LatitudeFormatter()
@@ -245,7 +250,6 @@ def plot_2d_cube(cube, vmin=None, vmax=None, mask_less=1e-8,
         str(zlevel),
         str(timestamp))))
     ax.set_title(title)
-
     return fig, title
 
 

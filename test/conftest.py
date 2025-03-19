@@ -46,6 +46,20 @@ def hysplit_model_result(data_dir):
     """A HysplitAshModelResult based on test data."""
     return HysplitAshModelResult(data_dir.joinpath('hysplit_operational.nc'))
 
+@pytest.fixture(scope='function')
+def hysplit_model_result_mine(data_dir):
+    """A HysplitAshModelResult based on test data."""
+    return HysplitAshModelResult(data_dir.joinpath('cdump_sum_Ruapehu_QVA_high.nc'))
+
+# @pytest.fixture(scope='function')
+# def hysplit_model_result_mine_3d(data_dir):
+#     """A HysplitAshModelResult based on test data."""
+#     return HysplitAshModelResult(data_dir.joinpath('cdump_sum.nc'))
+
+# @pytest.fixture(scope='function')
+# def hysplit_model_result_mine_sfc(data_dir):
+#     """A HysplitAshModelResult based on test data."""
+#     return HysplitAshModelResult(data_dir.joinpath('ddump_sum.nc'))
 
 @pytest.fixture(scope='module')
 def scantree():

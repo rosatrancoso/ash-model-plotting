@@ -20,7 +20,8 @@ class HysplitAshModelResult(AshModelResult):
     AshModelResult for data from Hysplit model simulations.
     """
     _air_concentration_names = {
-        'Concentration Array - AS01'
+        'Concentration Array - AS01',
+        'Concentration Array - SUM ',
     }
 
     def __repr__(self):
@@ -41,6 +42,7 @@ class HysplitAshModelResult(AshModelResult):
         The lowest altitude in the cube corresponds to deposition.
         :return: iris.cube.Cube
         """
+
         air_concentration = iris.Constraint(
             cube_func=lambda c: c.name() in self._air_concentration_names
             )
@@ -143,6 +145,10 @@ class HysplitAshModelResult(AshModelResult):
         # Overwrite data to give cumulative sum (as original is per step)
         cube.data = np.cumsum(cube.data, axis=0)
 
-        cube.units = self.air_concentration.units * Unit('m')
+        if cube.units == '1':
+            new_units = Unit('g/m2')
+            warn(f"Source data has no units for total_deposition, "
+                 f"using {new_units}.")
+            cube.units = new_units
 
         return cube
